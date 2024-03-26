@@ -25,7 +25,7 @@ int main()
 	zoomBorder.setOutlineThickness(1.0f);
 	zoomBorder.setOrigin(sf::Vector2f(zoomBorder.getSize().x / 2, zoomBorder.getSize().y / 2));
 
-	double oxmin = -2.4;
+	double oxmin = -2.5;
 	double oxmax = 1.0;
 	double oyRange = (oxmax - oxmin) * height / width;
 	double oymin = -oyRange / 2;
@@ -43,7 +43,7 @@ int main()
 	mandelTexture = mandelbrot(width, height, oxmin, oxmax, oymin, oymax, 100);
 
 	sf::Font font;
-	font.loadFromFile("fonts/arial.ttf");
+	font.loadFromFile("new_font.ttf");
 
 	sf::Text zoomText, precText;
 	zoomText.setFont(font);
@@ -153,7 +153,7 @@ double mandelIter(double cx, double cy, int maxIter) {
 	double xy = 0.0;
 
 	double i = maxIter;
-	while (i-- && xx + yy <= 4) {
+	while (i-- && xx + yy <= 60) {
 		xy = x * y;
 		xx = x * x;
 		yy = y * y;
