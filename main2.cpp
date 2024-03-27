@@ -6,13 +6,15 @@
 #define WINDOW_HEIGHT 1080
 #define WINDOW_WIDTH 1920
 
-__m256 circle_radius = _mm256_set1_ps(1000.0);
+const __m256 circle_radius = _mm256_set1_ps(1000.0);
+const __m256 scale_change = _mm256_set1_ps(50.0);
+const __m256 zero = _mm256_setzero_ps();
 
 int mandel_iter(__m256 x_0, __m256 y_0);
 
 int main()
 {
-    float scale = 100;
+    __m256 scale = _mm256_set1_ps(100.0);
     float dx = 0, dy = 0;
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Mandelbrot", sf::Style::Default, \
                                             sf::ContextSettings(0, 0, 0, 1, 1, sf::Style::Default, false));
@@ -50,12 +52,13 @@ int main()
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
                 window.close();
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Equal))
-                scale += 50;
+                scale = _mm256_add_ps(scale, scale_change);
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Dash))
             {
-                scale -= 50;
-                if (scale < 0)
-                    scale = 0;
+                scale = _mm256_sub_ps(scale, scale_change);
+                __m256 cmp = _mm256_cmp_ps(scale, zero, _CMP_LT_OS);
+                if (_mm256_movemask_ps(cmp))
+                    scale = _mm256_setzero_ps();
             }
             if (event.type == sf::Event::Closed)
                 window.close();
@@ -67,11 +70,13 @@ int main()
 
         for (int y_n = 0; y_n < WINDOW_HEIGHT; y_n++)
         {
-            y_0 = _mm256_set1_ps((y_n - y_center)/(scale+0.01));
+            y_0 = _mm256_set1_ps((y_n - y_center));
+            y_0 = _mm256_div_ps(y_0, scale);
 
             for (int x_n = 0; x_n < WINDOW_WIDTH; x_n++)
             {
-                x_0 = _mm256_set1_ps((x_n - x_center)/(scale+0.01));
+                x_0 = _mm256_set1_ps((x_n - x_center));
+                x_0 = _mm256_div_ps(x_0, scale);
 
                 int n = mandel_iter(x_0, y_0);
 
@@ -85,6 +90,7 @@ int main()
 
                 counter++;
             }
+         //   y_n = _mm256_add_ps(y_n)
         }
 
         window.clear(sf::Color::Black);
@@ -93,6 +99,7 @@ int main()
 
         window.draw(fps_text);
         window.display();
+
     }
 
     return 0;
