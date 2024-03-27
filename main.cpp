@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <stdio.h>
+#include <time.h>
 
 
 #define WINDOW_HEIGHT 1080
@@ -21,11 +22,11 @@ int main()
     sf::Text fps_text(" ", font, 50);
     fps_text.setFillColor(sf::Color::Red);
     float fps = 0;
-    sf::Clock clock;
+    sf::Clock clock_fps;
 
     while (window.isOpen())
     {
-        float current_time = clock.restart().asSeconds();
+        float current_time = clock_fps.restart().asSeconds();
         fps =1.0f / (current_time);
         int counter = 0;
         sprintf(fps_str, "%0.1f", fps);
@@ -63,6 +64,8 @@ int main()
 
         float y_0, x_0, x, y, x2, y2, xy, r2;
 
+        clock_t begin = clock();
+
         for (int y_n = 0; y_n < WINDOW_HEIGHT; y_n++)
         {
             y_0 = (float)(y_n - y_center)/(scale+0.01);
@@ -94,6 +97,12 @@ int main()
                 counter++;
             }
         }
+
+        clock_t end = clock();
+                double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+                printf("The elapsed time is %lf seconds\n", time_spent);
+
+
         window.clear(sf::Color::Black);
 
         window.draw(pixels);

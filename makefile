@@ -4,7 +4,7 @@ all:
 
 
 main2:
-	g++ -c main2.cpp
+	g++ -c -march=znver3 main2.cpp -O3
 	g++ main2.o -o sfml-app -lsfml-graphics -lsfml-window -lsfml-system -fpermissive
 
 clean:
