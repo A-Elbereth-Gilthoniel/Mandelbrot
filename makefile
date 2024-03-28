@@ -10,3 +10,4 @@ main2:
 clean:
 			rm -rf main.o
 			rm -rf main2.o
+			rm -rf sfml-app

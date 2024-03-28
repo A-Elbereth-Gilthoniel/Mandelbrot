@@ -1,35 +1,49 @@
 #include <SFML/Graphics.hpp>
 #include <stdio.h>
-#include <time.h>
 
+// const:
 
 #define WINDOW_HEIGHT 1080
 #define WINDOW_WIDTH 1920
 
+const float circle_radius = 1000;
+
+// functions:
+
+sf::Color get_color(int n);
+int mandel_iter(float x_0, float y_0);
+
+//=============================================
+
 int main()
 {
     float scale = 100;
-    float dx = 0, dy = 0;
-    float circle_radius = 1000;
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Mandelbrot", sf::Style::Fullscreen, \
-                                            sf::ContextSettings(0, 0, 0, 1, 1, sf::Style::Fullscreen, false));
+                                            sf::ContextSettings(0, 0, 0, 1, 1, sf::Style::Default, false));
 
     int x_center = WINDOW_WIDTH/2 - 200, y_center = WINDOW_HEIGHT/2;
+
 
     sf::Font font;
     font.loadFromFile("./new_font.ttf");
     char fps_str[10];
+    float current_time = 0;
     sf::Text fps_text(" ", font, 50);
     fps_text.setFillColor(sf::Color::Red);
     float fps = 0;
     sf::Clock clock_fps;
 
+    int counter = 0, n = 0;
+    float x_0 = 0, y_0 = 0;
+
+    sf::VertexArray pixels(sf::Points, WINDOW_HEIGHT * WINDOW_WIDTH);
+
     while (window.isOpen())
     {
-        float current_time = clock_fps.restart().asSeconds();
-        fps =1.0f / (current_time);
-        int counter = 0;
-        sprintf(fps_str, "%0.1f", fps);
+        current_time = clock_fps.restart().asSeconds();
+        fps = 1.0f / (current_time);
+        counter = 0;
+        sprintf(fps_str, "FPS: %0.1f", fps);
         fps_text.setString(std::string(fps_str));
 
         sf::Event event;
@@ -60,11 +74,7 @@ int main()
                 window.close();
         }
 
-        sf::VertexArray pixels(sf::Points, WINDOW_HEIGHT * WINDOW_WIDTH);
 
-        float y_0, x_0, x, y, x2, y2, xy, r2;
-
-        clock_t begin = clock();
 
         for (int y_n = 0; y_n < WINDOW_HEIGHT; y_n++)
         {
@@ -73,35 +83,14 @@ int main()
             for (int x_n = 0; x_n < WINDOW_WIDTH; x_n++)
             {
                 x_0 = (float)(x_n - x_center)/(scale+0.01);
-                x = x_0;
-                y = y_0;
-                int n = 0;
-                for (n = 0; n < 256; n++)
-                {
-                    x2 = x * x, y2 = y * y, xy = x*y;
-                    r2 = x2+y2;
 
-                    if (r2 >= circle_radius) break;
-
-                    x = x2 - y2 + x_0;
-                    y = xy + xy + y_0;
-                }
-                if (n >= 255)
-                    pixels[counter].color = sf::Color::Black;
-                else
-                {
-                    pixels[counter].color = sf::Color(255-n, 255-n, (100+n)%256);
-                }
+                n = mandel_iter(x_0, y_0);
+                pixels[counter].color = get_color(n);
                 pixels[counter].position = sf::Vector2f((float)x_n, (float)y_n);
 
                 counter++;
             }
         }
-
-        clock_t end = clock();
-                double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-                printf("The elapsed time is %lf seconds\n", time_spent);
-
 
         window.clear(sf::Color::Black);
 
@@ -113,3 +102,61 @@ int main()
 
     return 0;
 }
+
+
+//====================================================
+
+sf::Color get_color(int n)
+{
+    int colwidth = 666, coloffset = 3200;
+    float red = 0, blue = 0, green = 0;
+    if (n >= 50)
+        return sf::Color::Black;
+    n *= 25869;
+    n=(n+coloffset)%(3*colwidth);
+    if (n/colwidth==0)
+    {
+        blue =116+139*n/colwidth;
+        green =11+244*n/colwidth;
+        red =237*n/colwidth;
+    }
+    else if (n/colwidth==1)
+    {
+        n-=colwidth;
+        blue=255-253*n/colwidth;
+        green=255-123*n/colwidth;
+        red =238;
+    }
+    else
+    {
+        n-=2*colwidth;
+        blue =2+114*n/colwidth;
+        green=132-121*n/colwidth;
+        red =239-239*n/colwidth;
+    }
+    return sf::Color(red, green, blue);
+
+}
+
+//====================================================
+
+int mandel_iter(float x_0, float y_0)
+{
+    float x = 0, y = 0, x2 = 0, y2 = 0, xy = 0, r2 = 0;
+    x = x_0;
+    y = y_0;
+    int n = 0;
+    for (n = 0; n <= 50; n++)
+    {
+        x2 = x * x, y2 = y * y, xy = x*y;
+        r2 = x2+y2;
+
+        if (r2 >= circle_radius) return n;
+
+        x = x2 - y2 + x_0;
+        y = xy + xy + y_0;
+    }
+    return n;
+}
+
+//===================================================
